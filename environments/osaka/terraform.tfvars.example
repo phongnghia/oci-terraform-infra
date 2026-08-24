@@ -1,0 +1,22 @@
+# Osaka Environment - terraform.tfvars template
+#
+# INSTRUCTIONS:
+#   cp terraform.tfvars.example terraform.tfvars
+#   Fill in the values below, then run: terraform init && terraform plan
+#
+# WARNING: terraform.tfvars is listed in .gitignore - NEVER commit it.
+# OCI Authentication
+tenancy_ocid     = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+user_ocid        = "ocid1.user.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path = "~/.oci/oci_api_key.pem"
+
+# Project
+project_name   = "myproject"
+environment    = "dev"
+compartment_id = "ocid1.compartment.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+owner_tag      = "devops-team@example.com"
+
+# Networking
+management_cidr   = "203.0.113.0/28"
+dns_search_domain = "corp.example.com"

@@ -1,0 +1,86 @@
+/**
+ * Tokyo Region - Network Infrastructure
+ *
+ * OCI Region: ap-tokyo-1
+ * Region key: tky
+ *
+ * Deploys the full network stack for the Tokyo region:
+ *   - VCN  10.0.0.0/16
+ *   - Public subnet  10.0.1.0/24  (Windows bastion/jump-box)
+ *   - Private subnet 10.0.2.0/24  (Windows application servers)
+ *   - Internet Gateway, NAT Gateway, Service Gateway
+ *   - DRG + VCN attachment (for Tokyo to Osaka peering)
+ *   - DHCP Options
+ *   - Security List (Windows ports: RDP 3389, WinRM 5985/5986, SMB 445, ICMP)
+ *   - NSG: bastion-nsg, app-nsg (with all rules)
+ *
+ * Cross-region peering:
+ *   The DRG in Tokyo is connected to the DRG in Osaka via a Remote Peering
+ *   Connection (RPC). The Osaka VCN CIDR (10.1.0.0/16) is added to
+ *   cross_region_cidrs so that route tables forward inter-region traffic
+ *   through the DRG automatically.
+ *
+ * Deadline: 2025-05-16
+ */
+
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    oci = {
+      source  = "oracle/oci"
+      version = "~> 8.12.0"
+    }
+  }
+
+  # Remote State Backend (OCI Object Storage)
+  # Uncomment and fill in after creating the state bucket.
+  # Each region uses a separate state key to prevent cross-region state conflicts.
+  # backend "http" {
+  #   address       = "https://objectstorage.ap-tokyo-1.oraclecloud.com/p/<PAR_TOKEN>/n/<NAMESPACE>/b/tfstate-<project>/o/tokyo/terraform.tfstate"
+  #   update_method = "PUT"
+  # }
+}
+
+# Provider for the Tokyo region.
+provider "oci" {
+  tenancy_ocid     = var.tenancy_ocid
+  user_ocid        = var.user_ocid
+  fingerprint      = var.fingerprint
+  private_key_path = var.private_key_path
+  region           = "ap-tokyo-1"
+}
+
+# Common tags applied to every resource in this environment.
+locals {
+  common_tags = {
+    project     = var.project_name
+    environment = var.environment
+    region      = "ap-tokyo-1"
+    managed-by  = "terraform"
+    owner       = var.owner_tag
+  }
+}
+
+# Networking module for the full Tokyo network stack.
+module "networking" {
+  source = "../../modules/networking"
+
+  compartment_id      = var.compartment_id
+  project_name        = var.project_name
+  environment         = var.environment
+  region_key          = "tky"
+  vcn_cidr            = "10.0.0.0/16"
+  public_subnet_cidr  = "10.0.1.0/24"
+  private_subnet_cidr = "10.0.2.0/24"
+  management_cidr     = var.management_cidr
+  dns_search_domain   = var.dns_search_domain
+
+  # Route traffic destined for the Osaka VCN (10.1.0.0/16) through the DRG.
+  # After deploying both regions, configure a Remote Peering Connection (RPC)
+  # between the Tokyo DRG and the Osaka DRG in the OCI Console or via a
+  # separate Terraform resource (oci_core_remote_peering_connection).
+  cross_region_cidrs = ["10.1.0.0/16"]
+
+  common_tags = local.common_tags
+}
