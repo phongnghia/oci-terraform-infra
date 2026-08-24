@@ -1,0 +1,48 @@
+# Terraform state files contain sensitive data and must not be committed
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform.tfstate.lock.info
+
+# Terraform cache and provider plugins
+.terraform/
+
+# Terraform plan artifacts
+*.tfplan
+*.tfplan.json
+
+# Variable files may contain secrets - do not commit
+*.tfvars
+*.tfvars.json
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Crash log
+crash.log
+crash.*.log
+
+# OCI credentials
+*.pem
+*.key
+*.p12
+*.pfx
+oci_api_key*
+
+# Environment and local secret files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
